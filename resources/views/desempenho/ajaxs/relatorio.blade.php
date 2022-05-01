@@ -14,6 +14,12 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $total_rl = 0;
+                    $total_bs = 0;
+                    $total_c = 0;
+                    $total_l = 0;
+                @endphp
                 @forelse($datos as $dato)
                     @if($dato->no_usuario == $consultor->no_usuario)
                         <tr>
@@ -21,17 +27,23 @@
                                 {{ $dato->month_name }} de {{ $dato->year }}
                             </td>
                             <td>
-                                {{ $dato->receita_liquida }}
+                                R$ {{ number_format($dato->receita_liquida, 2, ',', '.') ?? 0,00 }}
                             </td>
                             <td>
-                                {{ $dato->brut_salario ?? 0,00 }}
+                                R$ {{ number_format($dato->brut_salario, 2, ',', '.') ?? 0,00 }}
                             </td>
                             <td>
-                                {{ $dato->comissao ?? 0,00 }}
+                                R$ {{ number_format($dato->comissao, 2, ',', '.') ?? 0,00 }}
                             </td>
                             <td>
-                                {{ $dato->lucro ?? 0,00 }}
+                                R$ {{ number_format($dato->lucro, 2, ',', '.') ?? 0,00 }}
                             </td>
+                            @php
+                                $total_rl += $dato->receita_liquida;
+                                $total_bs += $dato->brut_salario;
+                                $total_c += $dato->comissao;
+                                $total_l += $dato->lucro;
+                            @endphp
                         </tr>
                     @endif
                 @empty
@@ -43,15 +55,13 @@
                 @endforelse
             </tbody>
             <tfoot class="bg-light text-dark">
-                {{-- @forelse($datos2 as $dato2) --}}
-                    <td>SALDO</td>
-                    <td>R$ 26.500,00</td>
-                    <td>- R$ 4.000,00</td>
-                    <td>- R$ 3.500,00</td>
-                    <td>R$ 19.000,00</td>
-                {{-- @empty --}}
-                {{-- @endforelse --}}
+                <td>SALDO</td>
+                <td>R$ {{number_format($total_rl, 2, ',', '.') }}</td>
+                <td>R$ {{number_format($total_bs, 2, ',', '.') }}</td>
+                <td>R$ {{number_format($total_c, 2, ',', '.') }}</td>
+                <td>R$ {{number_format($total_l, 2, ',', '.') }}</td>
             </tfoot>
         </table>
     </div>
+    <hr>
 @endforeach

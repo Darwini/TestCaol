@@ -13,7 +13,7 @@
     </ul>
 
     <!-- Tab panes -->
-    <div class="tab-content">
+    <div class="tab-content my-2">
         <div id="consultores" class="container tab-pane active"><br>
             <div class="row form-group">
                 <div class="col-md-1 d-flex align-items-center justify-content-center">
