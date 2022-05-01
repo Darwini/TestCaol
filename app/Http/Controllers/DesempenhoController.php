@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
-use App\Models\Cliente;
 use App\Models\Permissao;
 use App\Models\Usuario;
+use App\Models\Fatura;
+use DB;
 
 class DesempenhoController extends Controller
 {
@@ -37,7 +38,6 @@ class DesempenhoController extends Controller
 
         $data = [
             'meses' => $this->meses,
-            // 'clientes' => $clientes,
             'consultores' => $consultores,
         ];
         return view('desempenho.index', $data);
@@ -45,7 +45,43 @@ class DesempenhoController extends Controller
 
     public function ajaxShowConsultores(Request $request)
     {
-        // return response()->json([view('ajax.consultores')->render()], 200);
-        return response()->json($request->all(), 200);
+        $total_imp_inc = 'cao_fatura.total * (cao_fatura.total_imp_inc / 100)';
+        // RECEITA LIQUIDA = VALOR - TOTAL_IMP_INC 
+        $receta_liquida = 'SUM(cao_fatura.total - ('.$total_imp_inc.')) AS receita_liquida';
+        // comisión = (VALOR – (VALOR * TOTAL_IMP_INC)) * COMISSAO_CN
+        $comissao = 'SUM(cao_fatura.total - ('.$total_imp_inc.') * (cao_fatura.comissao_cn/100)) AS comissao';
+        // Lucro = (VALOR-TOTAL_IMP_INC) – (Costo fijo + comisión).
+        $lucro = 'SUM((cao_fatura.total - ('.$total_imp_inc.')) - (cao_salario.brut_salario + (cao_fatura.comissao_cn / 100))) AS lucro';
+        // return response()->json($lucro);
+        $datos = [
+            'datos' => DB::table('cao_os')
+                        ->leftJoin('cao_fatura', 'cao_os.co_os', 'cao_fatura.co_os')
+                        ->leftJoin('cao_usuario', 'cao_os.co_usuario', 'cao_usuario.co_usuario')
+                        ->leftJoin('cao_salario', 'cao_usuario.co_usuario', 'cao_salario.co_usuario')
+                        ->select(
+                                'cao_salario.brut_salario',
+                                'cao_usuario.no_usuario',
+                                DB::raw($receta_liquida),
+                                DB::raw($comissao),
+                                DB::raw($lucro),
+                                DB::raw('MONTHNAME(cao_fatura.data_emissao) AS month_name'),
+                                DB::raw('YEAR(cao_fatura.data_emissao) AS year'),
+                        )
+                        ->whereIn('cao_os.co_usuario', $request->consultores)
+                        ->whereYear('cao_fatura.data_emissao', '>=', $request->anio_desde)
+                        ->whereYear('cao_fatura.data_emissao', '<=', $request->anio_hasta)
+                        ->whereMonth('cao_fatura.data_emissao', '>=', $request->mes_desde)
+                        ->whereMonth('cao_fatura.data_emissao', '<=', $request->mes_hasta)
+                        ->groupBy('cao_usuario.no_usuario', 'month_name', 'year', 'cao_salario.brut_salario')
+                        ->get(),
+
+            'consultores' => DB::table('cao_usuario')
+                            ->select('no_usuario')
+                            ->whereIn('co_usuario', $request->consultores)
+                            ->get(),
+        ];
+
+        // return response()->json($datos, 200);
+        return response()->json([view('desempenho.ajaxs.relatorio', $datos)->render()], 200);
     }
 }

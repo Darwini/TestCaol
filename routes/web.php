@@ -24,4 +24,4 @@ Route::get('/', function(){ return view('app'); })->name('home');
 
 Route::get('con_desempenho', [Desempenho::class, 'index'])->name('desempenho.index');
 
-Route::get('ajaxConsultores', [Desempenho::class, 'ajaxShowConsultores'])->name('consultarConsultores');
+Route::post('ajaxConsultores', [Desempenho::class, 'ajaxShowConsultores'])->name('consultarConsultores');

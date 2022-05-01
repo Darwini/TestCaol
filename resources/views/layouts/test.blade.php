@@ -51,7 +51,7 @@
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="javascript:void(0);" {{-- data-toggle="dropdown" --}} data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="javascript:void(0);" data-toggle="dropdown" data-bs-toggle="dropdown">
                             <i class="fa fa-handshake-o"></i> Comercial
                         </a>
                         <div class="dropdown-menu">
@@ -92,13 +92,14 @@
         
         @yield('contenido')
         <form id="logout" action="{{ route('logout') }}" method="POST"> @csrf </form>
-        <!-- scripts -->
+        <!-- Scripts -->
         <script type="text/javascript" src="{{ asset('/js/bootstrap.min.js') }}"></script>
         <script type="text/javascript" src="{{ asset('/js/jquery-3.5.1.min.js') }}"></script>
         <script type="text/javascript">
-            $(`[name="logout"]`).on('click', function(e){
-                $(`#logout`).submit();
-            });
+            // var token = document.querySelectorAll('meta[name="csrf-token"]')[0].content;
+            // var url = document.querySelectorAll('meta[name="url"]')[0].content;
+            
+            $(`[name="logout"]`).on('click', function(e){ $(`#logout`).submit(); });
 
             $(`[data-toggle="dropdown"]`).on('click', function(e){
                 hideDropdown();
@@ -119,22 +120,16 @@
                 $(`${target}`).show().addClass('show');
             });
 
-            $(`[data-dismiss="modal"]`).on('click', function(e){
-                hideModal();
-            });
+            $(`[data-dismiss="modal"]`).on('click', function(e){ hideModal(); });
 
-            function hideDropdown(){
-                $('.dropdown-menu').hide();
-            }
+            function hideDropdown(){ $('.dropdown-menu').hide(); }
 
             function hideTab(){
                 // $(`.tab-pane`).not(`${target}`).hide().removeClass('show');
                 $(`.tab-pane`).hide().removeClass('show');
             }
 
-            function hideModal(){
-                $('.modal').hide().removeClass('show');
-            }
+            function hideModal(){ $('.modal').hide().removeClass('show'); }
         </script>
         @yield('js')
     </body>
