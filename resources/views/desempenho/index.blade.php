@@ -168,42 +168,42 @@
             $(`#botones_opciones`).html(botones);
         }
 
-        function relatorio(){
-            let c, valor; let d = [];
-            const mes_desde = $(`[name="mes_desde"]`).val();
-            const anio_desde = $(`[name="anio_desde"]`).val();
-            const mes_hasta = $(`[name="mes_hasta"]`).val();
-            const anio_hasta = $(`[name="anio_hasta"]`).val();
-            
-            $(`[name="consultores_check[]"]`).each(function(){
-                c = $(this).prop('checked');
-                if(c === true){
-                    valor = $(this).val();
-                    d.push(valor);
-                }
-            });
+        function chargeFilters(){
+            $data = {
+                'mes_desde' : $(`[name="mes_desde"]`).val(),
+                'anio_desde' : $(`[name="anio_desde"]`).val(),
+                'mes_hasta' : $(`[name="mes_hasta"]`).val(),
+                'anio_hasta' : $(`[name="anio_hasta"]`).val(),
+            }
+            return $data;
+        }
 
+        function relatorio(){
+            const data = chargeFilters();
             const datos = {
                 '_token' : token,
-                'mes_desde' : mes_desde,
-                'anio_desde' : anio_desde,
-                'mes_hasta' : mes_hasta,
-                'anio_hasta' : anio_hasta,
-                'consultores': d,
+                'mes_desde' : data.mes_desde,
+                'anio_desde' : data.anio_desde,
+                'mes_hasta' : data.mes_hasta,
+                'anio_hasta' : data.anio_hasta,
+                'consultores': recorrer('valores'),
             }
-
             const ruta = `${url}/ajaxConsultores`;
             lanzarAjax(datos, ruta);
         }
 
-        function recorrer(){
+
+        function recorrer(resp){
             let c, valor, texto; let d = [];
             $(`[name="consultores_check[]"]`).each(function(){
                 c = $(this).prop('checked');
                 if(c === true){
-                    valor = $(this).val();
-                    texto = $(this).attr('data-texto');
-                    d.push(texto);
+                    if (resp=='valores') {
+                        datos = $(this).val();
+                    }else{
+                        datos = $(this).attr('data-texto');
+                    }
+                    d.push(datos);
                 }
             });
             return d;
@@ -224,6 +224,36 @@
 
         function montarDatos(resp){
             $(`#contenidos`).html(resp[0]);
+        }
+
+        function grafico(){
+            const ruta = `${url}/graficos`;
+            const data = chargeFilters();
+            const datos = {
+                '_token' : token,
+                'grafico' : 'grafico',
+                'mes_desde' : data.mes_desde,
+                'anio_desde' : data.anio_desde,
+                'mes_hasta' : data.mes_hasta,
+                'anio_hasta' : data.anio_hasta,
+                'consultores': recorrer('valores'),
+            }
+            lanzarAjax(datos, ruta);
+        }
+
+        function pizza(){
+            const ruta = `${url}/graficos`;
+            const data = chargeFilters();
+            const datos = {
+                '_token' : token,
+                'grafico' : 'pizza',
+                'mes_desde' : data.mes_desde,
+                'anio_desde' : data.anio_desde,
+                'mes_hasta' : data.mes_hasta,
+                'anio_hasta' : data.anio_hasta,
+                'consultores': recorrer('valores'),
+            }
+            lanzarAjax(datos, ruta);
         }
     </script>
 @endsection

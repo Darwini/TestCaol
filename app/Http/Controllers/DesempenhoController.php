@@ -45,6 +45,7 @@ class DesempenhoController extends Controller
 
     public function ajaxShowConsultores(Request $request)
     {
+        if (!$request->ajax()){ return redirect()->back(); }
         $total_imp_inc = 'cao_fatura.total * (cao_fatura.total_imp_inc / 100)';
         // RECEITA LIQUIDA = VALOR - TOTAL_IMP_INC 
         $receta_liquida = 'SUM(cao_fatura.total - ('.$total_imp_inc.')) AS receita_liquida';
@@ -80,8 +81,63 @@ class DesempenhoController extends Controller
                             ->whereIn('co_usuario', $request->consultores)
                             ->get(),
         ];
-
-        // return response()->json($datos, 200);
         return response()->json([view('desempenho.ajaxs.relatorio', $datos)->render()], 200);
+    }
+
+    public function ajaxGraficos(Request $request)
+    {
+        if ($request->ajax()) {
+            $total_imp_inc = 'cao_fatura.total * (cao_fatura.total_imp_inc / 100)';
+            // RECEITA LIQUIDA = VALOR - TOTAL_IMP_INC 
+            $receta_liquida = 'SUM(cao_fatura.total - ('.$total_imp_inc.')) AS receita_liquida';
+            
+            $data = [
+                'months' => DB::table('cao_os')
+                        ->leftJoin('cao_fatura', 'cao_os.co_os', 'cao_fatura.co_os')
+                        ->select(
+                            DB::raw('MONTHNAME(cao_fatura.data_emissao) AS month_name'),
+                        )
+                        ->whereIn('cao_os.co_usuario', $request->consultores)
+                        ->whereYear('cao_fatura.data_emissao', '>=', $request->anio_desde)
+                        ->whereYear('cao_fatura.data_emissao', '<=', $request->anio_hasta)
+                        ->whereMonth('cao_fatura.data_emissao', '>=', $request->mes_desde)
+                        ->whereMonth('cao_fatura.data_emissao', '<=', $request->mes_hasta)
+                        ->groupBy('month_name')
+                        ->get(),
+
+                'years' => DB::table('cao_os')
+                        ->leftJoin('cao_fatura', 'cao_os.co_os', 'cao_fatura.co_os')
+                        ->select(
+                            DB::raw('YEAR(cao_fatura.data_emissao) AS year'),
+                        )
+                        ->whereIn('cao_os.co_usuario', $request->consultores)
+                        ->whereYear('cao_fatura.data_emissao', '>=', $request->anio_desde)
+                        ->whereYear('cao_fatura.data_emissao', '<=', $request->anio_hasta)
+                        ->groupBy('year')
+                        ->get()->toArray(),
+
+                'datos' => DB::table('cao_os')
+                        ->leftJoin('cao_fatura', 'cao_os.co_os', 'cao_fatura.co_os')
+                        ->leftJoin('cao_usuario', 'cao_os.co_usuario', 'cao_usuario.co_usuario')
+                        ->select(
+                            'cao_usuario.no_usuario',
+                            DB::raw($receta_liquida),
+                            DB::raw('MONTHNAME(cao_fatura.data_emissao) AS month_name'),
+                        )
+                        ->whereIn('cao_os.co_usuario', $request->consultores)
+                        ->whereYear('cao_fatura.data_emissao', '>=', $request->anio_desde)
+                        ->whereYear('cao_fatura.data_emissao', '<=', $request->anio_hasta)
+                        ->whereMonth('cao_fatura.data_emissao', '>=', $request->mes_desde)
+                        ->whereMonth('cao_fatura.data_emissao', '<=', $request->mes_hasta)
+                        ->groupBy('cao_usuario.no_usuario', 'month_name')
+                        ->get(),
+                'consultores' => DB::table('cao_usuario')
+                            ->select('no_usuario')
+                            ->whereIn('co_usuario', $request->consultores)
+                            ->get(),
+            ];
+            // return response()->json($data);
+            return response()->json([view('desempenho.ajaxs.'.$request->grafico, $data)->render()], 200);
+        }
     }
 }
