@@ -42,8 +42,7 @@
 <script src="{{ asset('Highcharts-8.2.2/code/modules/exporting.js') }}"></script>
 <script src="{{ asset('Highcharts-8.2.2/code/modules/export-data.js') }}"></script>
 <script src="{{ asset('Highcharts-8.2.2/code/modules/accessibility.js') }}"></script>
-
-{{-- <script src="{{ asset('Highcharts-8.2.2/code/modules/series-label.js') }}"></script> --}}
+<script src="{{ asset('Highcharts-8.2.2/code/modules/series-label.js') }}"></script>
 
 <figure class="highcharts-figure">
     <div id="graphic"></div>
@@ -89,7 +88,9 @@
                 borderWidth: 0
             }
         },
-        series: series(),
+        series: 
+            series(),
+        
     });
 
     function meses(){
@@ -109,16 +110,35 @@
         <?php
             foreach ($consultores as $k => $consultor) {
         ?>
-            series.push(
-                {
-                    'name': '{{ $consultor->no_usuario }}',
-                    'data' : dataRL('{{ $consultor->no_usuario }}'),
-                }
-            );
+            series.push({
+                type: 'column',
+                name: '{{ $consultor->no_usuario }}',
+                data : dataRL('{{ $consultor->no_usuario }}'),
+            });
         <?php
             }
         ?>
+        series.push({
+            type: 'spline',
+            name: 'Custo Fixo Medio',
+            data: cfm(),
+            marker: {
+                lineWidth: 2,
+                lineColor: Highcharts.getOptions().colors[3],
+                fillColor: 'white'
+            }
+        });
         return series;
+    }
+
+    function cfm(){
+        var cfm = [];
+        var l = `{{ count($months) }}`;
+        for(i=0; i < l; i++){
+            cfm.push({{ number_format($custoFixoMedio, 2, '.', '') }});
+        }
+        console.log(cfm);
+        return cfm;
     }
 
     function dataRL(nombre){
@@ -131,7 +151,7 @@
                     {{ number_format($dato->receita_liquida, 2, '.', '') }}
                 );
             }
-        <?php       
+        <?php
             }
         ?>
         return data;

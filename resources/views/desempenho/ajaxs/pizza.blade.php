@@ -100,7 +100,6 @@
         <?php
             }
         ?>
-        console.log(serie);
         return serie;
     }
 
@@ -115,7 +114,6 @@
         <?php       
             }
         ?>
-        console.log(data);
         return data;
     }
 

@@ -131,6 +131,19 @@ class DesempenhoController extends Controller
                         ->whereMonth('cao_fatura.data_emissao', '<=', $request->mes_hasta)
                         ->groupBy('cao_usuario.no_usuario', 'month_name')
                         ->get(),
+
+                'custoFixoMedio' => DB::table('cao_os')
+                        ->leftJoin('cao_fatura', 'cao_os.co_os', 'cao_fatura.co_os')
+                        ->leftJoin('cao_usuario', 'cao_os.co_usuario', 'cao_usuario.co_usuario')
+                        ->leftJoin('cao_salario', 'cao_usuario.co_usuario', 'cao_salario.co_usuario')
+                        // ->select('cao_salario.brut_salario')
+                        ->whereIn('cao_os.co_usuario', $request->consultores)
+                        ->whereYear('cao_fatura.data_emissao', '>=', $request->anio_desde)
+                        ->whereYear('cao_fatura.data_emissao', '<=', $request->anio_hasta)
+                        ->whereMonth('cao_fatura.data_emissao', '>=', $request->mes_desde)
+                        ->whereMonth('cao_fatura.data_emissao', '<=', $request->mes_hasta)
+                        ->avg('cao_salario.brut_salario'),
+
                 'consultores' => DB::table('cao_usuario')
                             ->select('no_usuario')
                             ->whereIn('co_usuario', $request->consultores)
